@@ -56,7 +56,15 @@ jobs:
           cp hiveos/h-run.sh "$PKG_DIR/"
           cp hiveos/h-stats.sh "$PKG_DIR/"
           cp hiveos/h-config.sh "$PKG_DIR/"
+          
+          # Force LF line endings (safety net)
+          sed -i 's/\r$//' "$PKG_DIR"/*.sh "$PKG_DIR"/*.conf
+          
           chmod +x "$PKG_DIR"/*.sh
+          
+          # Verify scripts parse correctly
+          bash -n "$PKG_DIR/h-run.sh" && echo "h-run.sh: syntax OK" || exit 1
+          bash -n "$PKG_DIR/h-stats.sh" && echo "h-stats.sh: syntax OK" || exit 1
           
           # Create the tar.gz
           cd package
