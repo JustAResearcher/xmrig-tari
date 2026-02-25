@@ -31,8 +31,15 @@ jobs:
             -DWITH_HWLOC=ON
           make -j$(nproc)
 
-      - name: Strip binary
-        run: strip build/xmrig
+      - name: Find and strip binary
+        run: |
+          # Binary may be named xmrig or xmrig-notls depending on TLS config
+          BINARY=$(find build -maxdepth 1 -name "xmrig*" -type f -executable | head -1)
+          echo "Found binary: $BINARY"
+          strip "$BINARY"
+          # Rename to standard name
+          cp "$BINARY" build/xmrig
+          ls -lh build/xmrig
 
       - name: Prepare HiveOS package
         run: |
@@ -83,17 +90,26 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install libuv via vcpkg
+        run: |
+          vcpkg install libuv:x64-windows-static
+          echo "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake"
+
       - name: Build XMRig (Windows)
         run: |
           mkdir build
           cd build
-          cmake .. -G "Visual Studio 17 2022" -A x64 -DWITH_TLS=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF -DWITH_HWLOC=OFF
+          cmake .. -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static `
+            -DWITH_TLS=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF -DWITH_HWLOC=OFF
           cmake --build . --config Release
 
       - name: Package Windows build
         run: |
           mkdir package
-          Copy-Item build\Release\xmrig.exe package\xmrig-tari.exe
+          $bin = Get-ChildItem build\Release\xmrig*.exe | Select-Object -First 1
+          Copy-Item $bin.FullName package\xmrig-tari.exe
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
