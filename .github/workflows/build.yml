@@ -22,11 +22,8 @@ jobs:
 
       - name: Prepare static libuv
         run: |
-          # Ubuntu names it libuv_a.a, but XMRig cmake looks for libuv.a
           sudo ln -sf /usr/lib/x86_64-linux-gnu/libuv_a.a /usr/lib/x86_64-linux-gnu/libuv.a
-          # Remove shared .so so linker uses static .a
           sudo rm -f /usr/lib/x86_64-linux-gnu/libuv.so*
-          ls -la /usr/lib/x86_64-linux-gnu/libuv*
 
       - name: Build XMRig (static)
         run: |
@@ -40,25 +37,19 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="-static"
           make -j$(nproc)
 
-      - name: Verify static binary
+      - name: Verify and strip binary
         run: |
           BINARY=$(find build -maxdepth 1 -name "xmrig*" -type f -executable | head -1)
           echo "=== file ==="
           file "$BINARY"
           echo "=== ldd ==="
-          ldd "$BINARY" 2>&1 || echo "(expected: not a dynamic executable)"
-          echo "=== size ==="
-          ls -lh "$BINARY"
-
-      - name: Find and strip binary
-        run: |
-          # Binary may be named xmrig or xmrig-notls depending on TLS config
-          BINARY=$(find build -maxdepth 1 -name "xmrig*" -type f -executable | head -1)
-          echo "Found binary: $BINARY"
+          ldd "$BINARY" 2>&1 || echo "(statically linked - OK)"
           strip "$BINARY"
-          # Rename to standard name
           cp "$BINARY" build/xmrig
+          echo "=== final size ==="
           ls -lh build/xmrig
+          echo "=== smoke test ==="
+          build/xmrig --version || true
 
       - name: Prepare HiveOS package
         run: |
