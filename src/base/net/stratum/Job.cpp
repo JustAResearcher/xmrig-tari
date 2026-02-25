@@ -169,6 +169,10 @@ size_t xmrig::Job::nonceOffset() const
         return 147;
     }
 
+    if (algorithm() == Algorithm::RX_TARI) {
+        return 298;
+    }
+
     return 39;
 }
 

@@ -210,7 +210,7 @@ void xmrig::DaemonClient::connect()
         m_pool.setAlgo(m_coin.algorithm());
     }
 
-    if ((m_apiVersion == API_MONERO) && !m_walletAddress.isValid()) {
+    if ((m_apiVersion == API_MONERO) && !m_walletAddress.isValid() && m_coin.id() != Coin::TARI) {
         return connectError("Invalid wallet address.");
     }
 
@@ -396,7 +396,7 @@ bool xmrig::DaemonClient::parseJob(const rapidjson::Value &params, int *code)
         return jobError("Empty block template received from daemon."); // FIXME
     }
 
-    if (!m_blocktemplate.parse(blocktemplate, m_coin)) {
+    if (m_coin.id() != Coin::TARI && !m_blocktemplate.parse(blocktemplate, m_coin)) {
         return jobError("Invalid block template received from daemon.");
     }
 
@@ -416,7 +416,7 @@ bool xmrig::DaemonClient::parseJob(const rapidjson::Value &params, int *code)
 
     m_blockhashingblob = Json::getString(params, kBlockhashingBlob);
 
-    if (m_blocktemplate.hasMinerSignature()) {
+    if (m_coin.id() != Coin::TARI && m_blocktemplate.hasMinerSignature()) {
         if (m_pool.spendSecretKey().isEmpty()) {
             return jobError("Secret spend key is not set.");
         }

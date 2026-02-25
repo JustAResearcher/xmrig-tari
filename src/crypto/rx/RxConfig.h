@@ -103,7 +103,7 @@ private:
     bool m_wrmsr = false;
 #   endif
 
-    bool m_cacheQoS = false;
+    bool m_cacheQoS = true;
 
     static Mode readMode(const rapidjson::Value &value);
 

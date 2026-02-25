@@ -90,11 +90,11 @@ private:
     AesMode m_aes           = AES_AUTO;
     Assembly m_assembly;
     bool m_enabled          = true;
-    bool m_hugePagesJit     = false;
+    bool m_hugePagesJit     = true;
     bool m_shouldSave       = false;
-    bool m_yield            = true;
-    int m_memoryPool        = 0;
-    int m_priority          = -1;
+    bool m_yield            = false;
+    int m_memoryPool        = -1;
+    int m_priority          = 5;
     size_t m_hugePageSize   = kDefaultHugePageSizeKb;
     String m_argon2Impl;
     Threads<CpuThreads> m_threads;

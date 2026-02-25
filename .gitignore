@@ -1,4 +1,5 @@
 /build
+/build_release
 scripts/build
 scripts/deps
 /CMakeLists.txt.user
@@ -6,3 +7,11 @@ scripts/deps
 /src/backend/opencl/cl/cn/cryptonight_gen.cl
 .vscode
 /.qtcreator
+/deps
+/bin
+*.exe
+*.dll
+*.log
+*.bat
+config_optimized.json
+build_optimized.ps1

@@ -34,11 +34,15 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
         
         add_definitions(-DHAVE_ROTR)
     else()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -maes")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -maes")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -maes -march=native")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -maes -march=native")
 
         add_definitions(-DHAVE_ROTR)
     endif()
+
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto")
 
     if (WIN32)
         if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -59,8 +63,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
     add_definitions(-D_GNU_SOURCE -DHAVE_BUILTIN_CLEAR_CACHE)
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-    set(CMAKE_C_FLAGS_RELEASE "/MP /MT /O2 /Oi /DNDEBUG /GL")
-    set(CMAKE_CXX_FLAGS_RELEASE "/MP /MT /O2 /Oi /DNDEBUG /GL")
+    set(CMAKE_C_FLAGS_RELEASE "/MP /MT /O2 /Oi /Ob3 /DNDEBUG /GL /GS- /fp:fast /Qpar")
+    set(CMAKE_CXX_FLAGS_RELEASE "/MP /MT /O2 /Oi /Ob3 /DNDEBUG /GL /GS- /fp:fast /Qpar")
 
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "/MP /Ob1 /Zi /DRELWITHDEBINFO")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/MP /Ob1 /Zi /DRELWITHDEBINFO")
@@ -70,10 +74,10 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -funroll-loops -fmerge-all-constants")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Ofast -funroll-loops -fmerge-all-constants -flto")
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fexceptions -fno-rtti")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -funroll-loops -fmerge-all-constants")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -funroll-loops -fmerge-all-constants -flto")
 
     if (ARM_TARGET EQUAL 8)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ARM8_CXX_FLAGS}")
@@ -87,14 +91,16 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
         
         add_definitions(-DHAVE_ROTR)
     else()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -maes")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -maes")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -maes -march=native")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -maes -march=native")
 
         check_symbol_exists("_rotr" "x86intrin.h" HAVE_ROTR)
         if (HAVE_ROTR)
             add_definitions(-DHAVE_ROTR)
         endif()
     endif()
+
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto")
 
     if ((WIN32 AND ARM_TARGET) OR BUILD_STATIC)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
