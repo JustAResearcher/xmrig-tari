@@ -20,6 +20,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libuv1-dev git
 
+      - name: Prepare static libuv
+        run: |
+          # Ubuntu names it libuv_a.a, but XMRig cmake looks for libuv.a
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libuv_a.a /usr/lib/x86_64-linux-gnu/libuv.a
+          # Remove shared .so so linker uses static .a
+          sudo rm -f /usr/lib/x86_64-linux-gnu/libuv.so*
+          ls -la /usr/lib/x86_64-linux-gnu/libuv*
+
       - name: Build XMRig (static)
         run: |
           mkdir build && cd build
