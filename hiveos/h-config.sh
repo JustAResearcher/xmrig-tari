@@ -75,7 +75,7 @@ cat > "$CUSTOM_CONFIG_FILENAME" <<CONFIGEOF
         "init": -1,
         "init-avx2": -1,
         "mode": "auto",
-        "1gb-pages": false,
+        "1gb-pages": true,
         "rdmsr": true,
         "wrmsr": true,
         "cache_qos": false,
