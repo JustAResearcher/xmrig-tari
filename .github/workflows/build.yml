@@ -18,9 +18,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libuv1-dev libhwloc-dev git
+          sudo apt-get install -y build-essential cmake libuv1-dev git
 
-      - name: Build XMRig
+      - name: Build XMRig (static)
         run: |
           mkdir build && cd build
           cmake .. \
@@ -28,8 +28,19 @@ jobs:
             -DWITH_TLS=OFF \
             -DWITH_OPENCL=OFF \
             -DWITH_CUDA=OFF \
-            -DWITH_HWLOC=ON
+            -DWITH_HWLOC=OFF \
+            -DCMAKE_EXE_LINKER_FLAGS="-static"
           make -j$(nproc)
+
+      - name: Verify static binary
+        run: |
+          BINARY=$(find build -maxdepth 1 -name "xmrig*" -type f -executable | head -1)
+          echo "=== file ==="
+          file "$BINARY"
+          echo "=== ldd ==="
+          ldd "$BINARY" 2>&1 || echo "(expected: not a dynamic executable)"
+          echo "=== size ==="
+          ls -lh "$BINARY"
 
       - name: Find and strip binary
         run: |
