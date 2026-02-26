@@ -2,7 +2,7 @@
 # HiveOS run script for xmrig-tari custom miner v8
 # CLI args only - no config file needed
 
-SCRIPT_VERSION="tari9"
+SCRIPT_VERSION="tari11"
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
 [[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig"
@@ -42,6 +42,15 @@ if [[ $SMOKE_RC -ne 0 ]]; then
     exit 1
 fi
 
+# Enable 1GB pages if available
+if [[ -d /sys/kernel/mm/hugepages/hugepages-1048576kB ]]; then
+    _current=$(cat /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages 2>/dev/null)
+    if [[ "$_current" == "0" ]]; then
+        echo 4 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages 2>/dev/null
+        echo "1GB pages: requested 4" >> "$LOG_FILE"
+    fi
+fi
+
 # Flight sheet params with defaults
 BRIDGE="${CUSTOM_URL:-192.168.68.78:18180}"
 WALLET="${CUSTOM_TEMPLATE:-default}"
@@ -52,6 +61,7 @@ echo "Launching: algo=rx/tari bridge=$BRIDGE wallet=$WALLET" >> "$LOG_FILE"
 cd "$MINER_DIR"
 exec "$MINER_BIN" \
     --no-color \
+    --no-config \
     --algo rx/tari \
     --url "$BRIDGE" \
     --user "$WALLET" \

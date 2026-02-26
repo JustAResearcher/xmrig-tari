@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# HiveOS stats script for xmrig-tari custom miner v6
+# HiveOS stats script for xmrig-tari custom miner v7
 # This script is SOURCED by the HiveOS agent - must set $khs and $stats variables
 
 [[ -z $MINER_API_PORT ]] && MINER_API_PORT=18088
 
-stats_raw=$(curl -s --connect-timeout 2 --max-time 5 http://127.0.0.1:$MINER_API_PORT/1/summary 2>/dev/null)
+stats_raw=$(curl -s --connect-timeout 2 --max-time 5 -H "Authorization: Bearer hiveos" http://127.0.0.1:$MINER_API_PORT/2/summary 2>/dev/null)
 
 if [[ -z "$stats_raw" ]] || [[ "$stats_raw" == "null" ]]; then
     khs=0

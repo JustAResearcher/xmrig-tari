@@ -65,11 +65,12 @@ cat > "$CUSTOM_CONFIG_FILENAME" <<CONFIGEOF
     "print-time": 30,
     "retries": 5,
     "retry-pause": 3,
-    "api": {
-        "id": "$WORKER_NAME",
-        "worker-id": "$WORKER_NAME",
+    "http": {
+        "enabled": true,
+        "host": "127.0.0.1",
         "port": 18088,
-        "access-token": "hiveos"
+        "access-token": "hiveos",
+        "restricted": false
     },
     "randomx": {
         "init": -1,
