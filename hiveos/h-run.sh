@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# HiveOS run script for xmrig-tari custom miner v5
+# HiveOS run script for xmrig-tari custom miner v6
 # CLI args only - no config file needed
 
-SCRIPT_VERSION="tari5"
+SCRIPT_VERSION="tari6"
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig-tari"
 [[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/$CUSTOM_MINER/$CUSTOM_MINER"
@@ -15,10 +15,10 @@ mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null
 
 # Debug logging
 echo "=== h-run.sh $SCRIPT_VERSION started $(date) ===" >> "$LOG_FILE"
-echo "MINER_BIN=$MINER_BIN" >> "$LOG_FILE"
+echo "MINER_BIN=$MINER_BIN size=$(stat -c%s "$MINER_BIN" 2>/dev/null)" >> "$LOG_FILE"
+echo "CPU: $(grep -m1 'model name' /proc/cpuinfo 2>/dev/null | cut -d: -f2)" >> "$LOG_FILE"
 echo "CUSTOM_URL=$CUSTOM_URL" >> "$LOG_FILE"
 echo "CUSTOM_TEMPLATE=$CUSTOM_TEMPLATE" >> "$LOG_FILE"
-echo "CUSTOM_PASS=$CUSTOM_PASS" >> "$LOG_FILE"
 echo "CUSTOM_USER_CONFIG=$CUSTOM_USER_CONFIG" >> "$LOG_FILE"
 echo "WORKER_NAME=$WORKER_NAME" >> "$LOG_FILE"
 

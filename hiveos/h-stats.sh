@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# HiveOS stats script for xmrig-tari custom miner v5
+# HiveOS stats script for xmrig-tari custom miner v6
 # This script is SOURCED by the HiveOS agent - must set $khs and $stats variables
 
 [[ -z $MINER_API_PORT ]] && MINER_API_PORT=18088

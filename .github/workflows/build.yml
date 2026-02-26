@@ -25,7 +25,7 @@ jobs:
           sudo ln -sf /usr/lib/x86_64-linux-gnu/libuv_a.a /usr/lib/x86_64-linux-gnu/libuv.a
           sudo rm -f /usr/lib/x86_64-linux-gnu/libuv.so*
 
-      - name: Build XMRig (static)
+      - name: Build XMRig (static, portable x86-64)
         run: |
           mkdir build && cd build
           cmake .. \
@@ -34,6 +34,8 @@ jobs:
             -DWITH_OPENCL=OFF \
             -DWITH_CUDA=OFF \
             -DWITH_HWLOC=OFF \
+            -DCMAKE_C_FLAGS="-maes -march=x86-64 -mtune=generic" \
+            -DCMAKE_CXX_FLAGS="-maes -march=x86-64 -mtune=generic" \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
           make -j$(nproc)
 
@@ -44,6 +46,9 @@ jobs:
           file "$BINARY"
           echo "=== ldd ==="
           ldd "$BINARY" 2>&1 || echo "(statically linked - OK)"
+          echo "=== arch check ==="
+          readelf -A "$BINARY" 2>/dev/null | head -20 || true
+          objdump -d "$BINARY" | grep -c 'vbroadcast\|vperm\|vgather\|vaes' | xargs -I{} echo "AVX-512/VAES instructions found: {} (should be 0 for portable build)" || true
           strip "$BINARY"
           cp "$BINARY" build/xmrig
           echo "=== final size ==="
@@ -66,6 +71,9 @@ jobs:
           cp hiveos/h-run.sh "$PKG_DIR/"
           cp hiveos/h-stats.sh "$PKG_DIR/"
           cp hiveos/h-config.sh "$PKG_DIR/"
+          
+          # Copy install helper
+          if [ -f hiveos/install.sh ]; then cp hiveos/install.sh "$PKG_DIR/"; fi
           
           # Force LF line endings (safety net)
           sed -i 's/\r$//' "$PKG_DIR"/*.sh "$PKG_DIR"/*.conf
