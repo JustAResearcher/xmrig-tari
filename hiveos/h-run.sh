@@ -2,7 +2,7 @@
 # HiveOS run script for xmrig-tari custom miner v8
 # CLI args only - no config file needed
 
-SCRIPT_VERSION="tari18"
+SCRIPT_VERSION="tari19"
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
 [[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig"
@@ -99,9 +99,14 @@ PASS="${CUSTOM_PASS:-x}"
 echo "Launching: algo=rx/tari bridge=$BRIDGE wallet=$WALLET threads=$(nproc)" >> "$LOG_FILE"
 
 cd "$MINER_DIR"
+
+# Delete any config.json so CLI args are the sole source of truth
+# h-config.sh generates a config.json that XMRig auto-loads from cwd,
+# overriding our CLI thread count. We want --threads $(nproc) to win.
+rm -f "$MINER_DIR/config.json" 2>/dev/null
+
 exec "$MINER_BIN" \
     --no-color \
-    --no-config \
     --algo rx/tari \
     --url "$BRIDGE" \
     --user "$WALLET" \
