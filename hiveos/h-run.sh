@@ -4,7 +4,7 @@
 
 SCRIPT_VERSION="tari7"
 
-[[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
+[[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig-tari"
 [[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig-tari"
 
 MINER_DIR="/hive/miners/custom/$CUSTOM_MINER"
