@@ -71,6 +71,7 @@ exec "$MINER_BIN" \
     --donate-level 0 \
     --print-time 30 \
     --coin TARI \
+    --threads $(nproc) \
     --http-port 18088 \
     --http-access-token hiveos \
     --log-file "$LOG_FILE" \
