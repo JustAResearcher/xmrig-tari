@@ -2,7 +2,7 @@
 # HiveOS run script for xmrig-tari custom miner v8
 # CLI args only - no config file needed
 
-SCRIPT_VERSION="tari11"
+SCRIPT_VERSION="tari14"
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
 [[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig"
@@ -71,7 +71,7 @@ exec "$MINER_BIN" \
     --donate-level 0 \
     --print-time 30 \
     --coin TARI \
-    --threads $(nproc) \
+    --cpu-max-threads-hint 100 \
     --randomx-1gb-pages \
     --http-port 18088 \
     --http-access-token hiveos \
