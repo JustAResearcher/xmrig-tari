@@ -2,7 +2,7 @@
 # HiveOS run script for xmrig-tari custom miner v8
 # CLI args only - no config file needed
 
-SCRIPT_VERSION="tari17"
+SCRIPT_VERSION="tari18"
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
 [[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig"
@@ -96,7 +96,7 @@ BRIDGE="${CUSTOM_URL:-192.168.68.78:18180}"
 WALLET="${CUSTOM_TEMPLATE:-default}"
 PASS="${CUSTOM_PASS:-x}"
 
-echo "Launching: algo=rx/tari bridge=$BRIDGE wallet=$WALLET" >> "$LOG_FILE"
+echo "Launching: algo=rx/tari bridge=$BRIDGE wallet=$WALLET threads=$(nproc)" >> "$LOG_FILE"
 
 cd "$MINER_DIR"
 exec "$MINER_BIN" \
@@ -111,7 +111,6 @@ exec "$MINER_BIN" \
     --donate-level 0 \
     --print-time 30 \
     --coin TARI \
-    --cpu-max-threads-hint 100 \
     --threads $(nproc) \
     --randomx-1gb-pages \
     --http-port 18088 \
