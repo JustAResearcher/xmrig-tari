@@ -58,7 +58,7 @@ jobs:
 
       - name: Prepare HiveOS package
         run: |
-          PKG_NAME="xmrig-tari"
+          PKG_NAME="xmrig"
           PKG_DIR="package/$PKG_NAME"
           mkdir -p "$PKG_DIR"
           
@@ -86,12 +86,12 @@ jobs:
           
           # Create the tar.gz
           cd package
-          tar -czf "${PKG_NAME}.tar.gz" "$PKG_NAME"
+          tar -czf "xmrig-tari.tar.gz" "$PKG_NAME"
           
           echo "Package contents:"
-          tar -tzf "${PKG_NAME}.tar.gz"
+          tar -tzf "xmrig-tari.tar.gz"
           echo ""
-          ls -lh "${PKG_NAME}.tar.gz"
+          ls -lh "xmrig-tari.tar.gz"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
