@@ -18,14 +18,25 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libuv1-dev libhwloc-dev git
+          sudo apt-get install -y build-essential cmake libuv1-dev git autoconf automake libtool
+
+      - name: Build hwloc static (minimal, no udev/pci/xml)
+        run: |
+          HWLOC_VER=2.9.3
+          wget -q "https://download.open-mpi.org/release/hwloc/v2.9/hwloc-${HWLOC_VER}.tar.gz"
+          tar xzf "hwloc-${HWLOC_VER}.tar.gz"
+          cd "hwloc-${HWLOC_VER}"
+          ./configure --enable-static --disable-shared \
+            --disable-io --disable-libudev --disable-libxml2 \
+            --disable-opencl --disable-cuda --disable-nvml --disable-rsmi \
+            --disable-gl --disable-pci --prefix=/usr/local
+          make -j$(nproc)
+          sudo make install
 
       - name: Prepare static libraries
         run: |
           sudo ln -sf /usr/lib/x86_64-linux-gnu/libuv_a.a /usr/lib/x86_64-linux-gnu/libuv.a
           sudo rm -f /usr/lib/x86_64-linux-gnu/libuv.so*
-          # Ensure hwloc static lib is findable and remove dynamic so linker uses static
-          sudo rm -f /usr/lib/x86_64-linux-gnu/libhwloc.so*
 
       - name: Build XMRig (static, portable x86-64)
         run: |
@@ -35,6 +46,7 @@ jobs:
             -DWITH_TLS=OFF \
             -DWITH_OPENCL=OFF \
             -DWITH_CUDA=OFF \
+            -DXMRIG_DEPS=/usr/local \
             -DCMAKE_C_FLAGS="-maes -march=x86-64 -mtune=generic" \
             -DCMAKE_CXX_FLAGS="-maes -march=x86-64 -mtune=generic" \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
