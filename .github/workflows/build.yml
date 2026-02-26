@@ -18,12 +18,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libuv1-dev git
+          sudo apt-get install -y build-essential cmake libuv1-dev libhwloc-dev git
 
-      - name: Prepare static libuv
+      - name: Prepare static libraries
         run: |
           sudo ln -sf /usr/lib/x86_64-linux-gnu/libuv_a.a /usr/lib/x86_64-linux-gnu/libuv.a
           sudo rm -f /usr/lib/x86_64-linux-gnu/libuv.so*
+          # Ensure hwloc static lib is findable and remove dynamic so linker uses static
+          sudo rm -f /usr/lib/x86_64-linux-gnu/libhwloc.so*
 
       - name: Build XMRig (static, portable x86-64)
         run: |
@@ -33,7 +35,6 @@ jobs:
             -DWITH_TLS=OFF \
             -DWITH_OPENCL=OFF \
             -DWITH_CUDA=OFF \
-            -DWITH_HWLOC=OFF \
             -DCMAKE_C_FLAGS="-maes -march=x86-64 -mtune=generic" \
             -DCMAKE_CXX_FLAGS="-maes -march=x86-64 -mtune=generic" \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
