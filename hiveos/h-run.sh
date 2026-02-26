@@ -72,6 +72,7 @@ exec "$MINER_BIN" \
     --print-time 30 \
     --coin TARI \
     --threads $(nproc) \
+    --randomx-1gb-pages \
     --http-port 18088 \
     --http-access-token hiveos \
     --log-file "$LOG_FILE" \
