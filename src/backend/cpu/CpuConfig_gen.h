@@ -128,6 +128,16 @@ size_t inline generate<Algorithm::RANDOM_X>(Threads<CpuThreads> &threads, uint32
 
     count += generate(Algorithm::kRX, threads, Algorithm::RX_0, limit);
 
+    // RX_TARI: ensure a profile exists using ALL logical CPUs (including SMT/HT).
+    // The standard hwloc heuristic may under-count on EPYC/Zen 2 where L2 caches
+    // are not direct children of L3 in the topology tree, causing the formula to
+    // reduce cacheHashes to only physical cores.
+    if (!threads.isExist(Algorithm::RX_TARI)) {
+        const size_t total = cpuInfo->threads();
+        CpuThreads tari(total, 1);
+        count += threads.move(Algorithm::kRX_TARI, std::move(tari));
+    }
+
     return count;
 }
 #endif

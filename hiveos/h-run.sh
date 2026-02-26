@@ -2,7 +2,7 @@
 # HiveOS run script for xmrig-tari custom miner v9
 # Uses --config to force config.json loading (contains explicit thread profiles)
 
-SCRIPT_VERSION="tari20"
+SCRIPT_VERSION="tari21"
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
 [[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig"

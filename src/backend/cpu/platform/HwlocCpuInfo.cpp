@@ -335,11 +335,27 @@ void xmrig::HwlocCpuInfo::processTopLevelCache(hwloc_obj_t cache, const Algorith
             hwloc_obj_t ch = cache->children[i];
             if (ch->type == HWLOC_OBJ_GROUP) {
                 for (size_t j = 0; j < ch->arity; ++j) {
-                    process_L2(ch->children[j]);
+                    hwloc_obj_t ch2 = ch->children[j];
+                    if (hwloc_obj_type_is_cache(ch2->type)) {
+                        process_L2(ch2);
+                    }
+                    else {
+                        // L2 may be nested under non-cache objects (e.g., Core)
+                        for (size_t k = 0; k < ch2->arity; ++k) {
+                            process_L2(ch2->children[k]);
+                        }
+                    }
                 }
             }
-            else {
+            else if (hwloc_obj_type_is_cache(ch->type)) {
                 process_L2(ch);
+            }
+            else {
+                // Direct child is not a cache (e.g., Core on EPYC Zen 2).
+                // L2 cache may be underneath it.
+                for (size_t j = 0; j < ch->arity; ++j) {
+                    process_L2(ch->children[j]);
+                }
             }
         }
     }
