@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# HiveOS run script for xmrig-tari custom miner v7
+# HiveOS run script for xmrig-tari custom miner v8
 # CLI args only - no config file needed
 
-SCRIPT_VERSION="tari7"
+SCRIPT_VERSION="tari9"
 
-[[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig-tari"
-[[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig-tari"
+[[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
+[[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig"
 
 MINER_DIR="/hive/miners/custom/$CUSTOM_MINER"
 MINER_BIN="$MINER_DIR/xmrig"

@@ -2,7 +2,7 @@
 # HiveOS config script for xmrig-tari custom miner
 # Generates config.json from flight sheet parameters
 
-[[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig-tari"
+[[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
 MINER_DIR="/hive/miners/custom/$CUSTOM_MINER"
 CUSTOM_CONFIG_FILENAME="$MINER_DIR/config.json"
 

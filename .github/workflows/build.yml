@@ -58,7 +58,7 @@ jobs:
 
       - name: Prepare HiveOS package
         run: |
-          PKG_NAME="xmrig-tari"
+          PKG_NAME="xmrig"
           PKG_DIR="package/$PKG_NAME"
           mkdir -p "$PKG_DIR"
           
