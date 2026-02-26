@@ -7,7 +7,7 @@ MINER_DIR="/hive/miners/custom/$CUSTOM_MINER"
 CUSTOM_CONFIG_FILENAME="$MINER_DIR/config.json"
 
 # Flight sheet variables:
-#   CUSTOM_URL     = bridge proxy address, e.g. "192.168.1.100:18180"  
+#   CUSTOM_URL     = bridge proxy address, e.g. "192.168.1.100:18180"
 #   CUSTOM_TEMPLATE = wallet address (Tari wallet)
 #   CUSTOM_PASS    = password (unused, can be worker name)
 #   CUSTOM_USER_CONFIG = extra JSON overrides
@@ -20,18 +20,49 @@ PASS="${CUSTOM_PASS:-x}"
 # Worker name from HiveOS
 WORKER_NAME="${WORKER_NAME:-$(hostname)}"
 
-# Detect thread count
-THREADS=$(nproc 2>/dev/null || echo 16)
-
-# Build thread affinity array for all cores
-THREAD_ARRAY="["
-for ((i=0; i<THREADS; i++)); do
-    [[ $i -gt 0 ]] && THREAD_ARRAY="$THREAD_ARRAY,"
-    THREAD_ARRAY="$THREAD_ARRAY$i"
-done
-THREAD_ARRAY="$THREAD_ARRAY]"
+# Detect ALL online logical CPUs from sysfs (most reliable on Linux)
+# This correctly returns all hyperthreads/SMT siblings, not just physical cores
+if [[ -f /sys/devices/system/cpu/online ]]; then
+    ONLINE=$(cat /sys/devices/system/cpu/online)
+    # Parse range format like "0-95" or "0-3,8-11" into individual CPU IDs
+    THREAD_ARRAY="["
+    FIRST=1
+    IFS=',' read -ra RANGES <<< "$ONLINE"
+    THREAD_COUNT=0
+    for range in "${RANGES[@]}"; do
+        if [[ "$range" == *-* ]]; then
+            IFS='-' read -r start end <<< "$range"
+            for ((i=start; i<=end; i++)); do
+                [[ $FIRST -eq 0 ]] && THREAD_ARRAY="$THREAD_ARRAY,"
+                THREAD_ARRAY="$THREAD_ARRAY$i"
+                FIRST=0
+                ((THREAD_COUNT++))
+            done
+        else
+            [[ $FIRST -eq 0 ]] && THREAD_ARRAY="$THREAD_ARRAY,"
+            THREAD_ARRAY="$THREAD_ARRAY$range"
+            FIRST=0
+            ((THREAD_COUNT++))
+        fi
+    done
+    THREAD_ARRAY="$THREAD_ARRAY]"
+    THREADS=$THREAD_COUNT
+else
+    # Fallback to nproc
+    THREADS=$(nproc 2>/dev/null || echo 16)
+    THREAD_ARRAY="["
+    for ((i=0; i<THREADS; i++)); do
+        [[ $i -gt 0 ]] && THREAD_ARRAY="$THREAD_ARRAY,"
+        THREAD_ARRAY="$THREAD_ARRAY$i"
+    done
+    THREAD_ARRAY="$THREAD_ARRAY]"
+fi
 
 # Generate config.json
+# CRITICAL: Use "rx/tari" as the thread profile key (exact algo match)
+# so XMRig picks up our explicit thread list instead of auto-detecting.
+# Also include "rx" and "*" as fallback keys for maximum compatibility.
+# Do NOT include "max-threads-hint" — it can limit auto-detection.
 cat > "$CUSTOM_CONFIG_FILENAME" <<CONFIGEOF
 {
     "autosave": false,
@@ -42,13 +73,15 @@ cat > "$CUSTOM_CONFIG_FILENAME" <<CONFIGEOF
         "hw-aes": null,
         "priority": null,
         "memory-pool": false,
-        "max-threads-hint": 100,
+        "yield": false,
         "asm": true,
         "argon2-impl": null,
-        "rx": $THREAD_ARRAY
+        "rx/tari": $THREAD_ARRAY,
+        "rx": $THREAD_ARRAY,
+        "*": $THREAD_ARRAY
     },
-    "donate-level": 1,
-    "donate-over-proxy": 1,
+    "donate-level": 0,
+    "donate-over-proxy": 0,
     "log-file": "/var/log/miner/$CUSTOM_MINER/$CUSTOM_MINER.log",
     "pools": [
         {
@@ -88,4 +121,5 @@ CONFIGEOF
 
 echo "Config generated: $CUSTOM_CONFIG_FILENAME"
 echo "Bridge: $BRIDGE_URL"
-echo "Threads: $THREADS"
+echo "Threads: $THREADS (from $(if [[ -f /sys/devices/system/cpu/online ]]; then echo sysfs; else echo nproc; fi))"
+echo "Thread array: $THREAD_ARRAY"
