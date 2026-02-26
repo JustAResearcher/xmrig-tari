@@ -241,6 +241,10 @@ void xmrig::DaemonClient::setPool(const Pool &pool)
     if (!m_coin.isValid() && pool.algorithm() == Algorithm::RX_WOW) {
         m_coin = Coin::WOWNERO;
     }
+
+    if (!m_coin.isValid() && pool.algorithm() == Algorithm::RX_TARI) {
+        m_coin = Coin::TARI;
+    }
 }
 
 

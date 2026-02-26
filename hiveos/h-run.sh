@@ -60,7 +60,8 @@ exec "$MINER_BIN" \
     --daemon-poll-interval 1000 \
     --donate-level 0 \
     --print-time 30 \
-    --api-port 18088 \
-    --api-access-token hiveos \
+    --coin TARI \
+    --http-port 18088 \
+    --http-access-token hiveos \
     --log-file "$LOG_FILE" \
     $CUSTOM_USER_CONFIG
