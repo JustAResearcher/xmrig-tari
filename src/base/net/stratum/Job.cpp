@@ -170,7 +170,7 @@ size_t xmrig::Job::nonceOffset() const
     }
 
     if (algorithm() == Algorithm::RX_TARI) {
-        return 298;
+        return 39;  // Tari 76-byte hashing blob: nonce at offset 35 (8 BE bytes), XMRig writes LE u32 at 39
     }
 
     return 39;
