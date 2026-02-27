@@ -129,20 +129,34 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install libuv via vcpkg
+      - name: Install libuv via vcpkg (static)
         run: |
-          vcpkg install libuv:x64-windows-release
-          echo "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake"
+          vcpkg install libuv:x64-windows-static
 
-      - name: Build XMRig (Windows)
+      - name: Build XMRig (Windows, fully static)
         run: |
           mkdir build
           cd build
           cmake .. -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" `
-            -DVCPKG_TARGET_TRIPLET=x64-windows-release `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static `
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded `
             -DWITH_TLS=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF -DWITH_HWLOC=OFF
           cmake --build . --config Release
+
+      - name: Verify no DLL dependencies
+        run: |
+          $bin = Get-ChildItem build\Release\xmrig*.exe | Select-Object -First 1
+          Write-Host "Binary: $($bin.FullName) ($([math]::Round($bin.Length/1MB,2)) MB)"
+          # Check for uv.dll dependency - should NOT be present
+          $deps = & dumpbin /dependents $bin.FullName 2>$null
+          Write-Host "=== Dependencies ==="
+          $deps | Where-Object { $_ -match '\.dll' } | ForEach-Object { Write-Host $_.Trim() }
+          if ($deps | Where-Object { $_ -match 'uv\.dll' }) {
+            Write-Error "FATAL: uv.dll dependency found - build is not static!"
+            exit 1
+          }
+          Write-Host "OK: No uv.dll dependency"
 
       - name: Package Windows build
         run: |
