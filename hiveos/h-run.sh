@@ -2,7 +2,7 @@
 # HiveOS run script for xmrig-tari custom miner v9
 # Uses --config to force config.json loading (contains explicit thread profiles)
 
-SCRIPT_VERSION="tari22"
+SCRIPT_VERSION="tari24"
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
 [[ -z $CUSTOM_LOG_BASENAME ]] && CUSTOM_LOG_BASENAME="/var/log/miner/custom/xmrig"
@@ -113,17 +113,37 @@ fi
 
 cd "$MINER_DIR"
 
+# Strip --no-config from CUSTOM_USER_CONFIG
+# HiveOS injects --no-config for custom miners. Even though our binary
+# handles it, older cached binaries may not. Remove it at the shell level.
+CUSTOM_USER_CONFIG=$(echo "$CUSTOM_USER_CONFIG" | sed 's/--no-config//g; s/  */ /g; s/^ *//; s/ *$//')
+
 echo "Launching with --config $CONFIG_FILE (thread profiles in config, no --threads CLI)" >> "$LOG_FILE"
+echo "CUSTOM_USER_CONFIG after filter: '$CUSTOM_USER_CONFIG'" >> "$LOG_FILE"
 
 # CRITICAL: Use --config to FORCE config.json loading.
 # Without --config, XMRig builds a valid config from CLI args alone
 # and NEVER loads config.json, falling back to hwloc auto-detect
 # which gives only 48 threads (physical cores) on EPYC instead of 96.
 # The config.json has explicit "rx/tari" thread profiles with ALL logical CPUs.
-exec "$MINER_BIN" \
+echo "=== Starting XMRig at $(date) ===" | tee -a "$LOG_FILE"
+"$MINER_BIN" \
     --no-color \
     --config "$CONFIG_FILE" \
     --donate-level 0 \
     --randomx-1gb-pages \
     --log-file "$LOG_FILE" \
+    --print-time 10 \
     $CUSTOM_USER_CONFIG
+
+MINER_EXIT=$?
+echo "=== MINER EXITED with code $MINER_EXIT at $(date) ===" | tee -a "$LOG_FILE"
+
+# If miner exited unexpectedly, give HiveOS watchdog time to see the error
+if [[ $MINER_EXIT -ne 0 ]]; then
+    echo "Binary: $(file "$MINER_BIN" 2>/dev/null)" >> "$LOG_FILE"
+    echo "Last 20 lines of log:" >> "$LOG_FILE"
+    tail -20 "$LOG_FILE" >> "$LOG_FILE" 2>/dev/null
+    sleep 15
+fi
+exit $MINER_EXIT
