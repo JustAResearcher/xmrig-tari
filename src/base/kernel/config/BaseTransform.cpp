@@ -62,6 +62,10 @@ void xmrig::BaseTransform::load(JsonChain &chain, Process *process, IConfigTrans
 
             doc = Document(kObjectType);
         }
+        else if (key == IConfig::NoConfigKey) {
+            // Silently ignore --no-config (HiveOS compatibility)
+            continue;
+        }
         else {
             transform.transform(doc, key, optarg);
         }

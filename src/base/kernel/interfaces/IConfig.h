@@ -88,6 +88,7 @@ public:
         HugePagesJitKey      = 1057,
         RotationKey          = 1058,
         DaemonJobTimeoutKey  = 1059,
+        NoConfigKey          = 1060,  // --no-config (no-op, for HiveOS compatibility)
 
         // xmrig common
         CPUPriorityKey       = 1021,
