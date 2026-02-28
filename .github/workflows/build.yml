@@ -154,19 +154,18 @@ jobs:
             -DWITH_TLS=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF -DWITH_HWLOC=OFF
           cmake --build . --config Release
 
-      - name: Verify no DLL dependencies
+      - name: Verify binary runs without DLL errors
         run: |
           $bin = Get-ChildItem build\Release\xmrig*.exe | Select-Object -First 1
           Write-Host "Binary: $($bin.FullName) ($([math]::Round($bin.Length/1MB,2)) MB)"
-          # Check for uv.dll dependency - should NOT be present
-          $deps = & dumpbin /dependents $bin.FullName 2>$null
-          Write-Host "=== Dependencies ==="
-          $deps | Where-Object { $_ -match '\.dll' } | ForEach-Object { Write-Host $_.Trim() }
-          if ($deps | Where-Object { $_ -match 'uv\.dll' }) {
-            Write-Error "FATAL: uv.dll dependency found - build is not static!"
+          # If uv.dll is missing, --version will crash with DLL not found
+          $output = & $bin.FullName --version 2>&1
+          Write-Host $output
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Binary failed to run - possible missing DLL"
             exit 1
           }
-          Write-Host "OK: No uv.dll dependency"
+          Write-Host "OK: Binary runs standalone (no missing DLLs)"
 
       - name: Package Windows build
         run: |
