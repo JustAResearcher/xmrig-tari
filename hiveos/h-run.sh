@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# HiveOS run script for xmrig-tari custom miner v10
+# HiveOS run script for xmrig-tari custom miner v11
 # Uses --config to force config.json loading (contains explicit thread profiles)
 
-SCRIPT_VERSION="tari25"
+SCRIPT_VERSION="tari28"
 EXPECTED_BIN_SIZE=0  # 0 = skip check; CI sets this during build
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
@@ -25,25 +25,30 @@ echo "CUSTOM_URL=$CUSTOM_URL" >> "$LOG_FILE"
 echo "CUSTOM_TEMPLATE=$CUSTOM_TEMPLATE" >> "$LOG_FILE"
 echo "CUSTOM_USER_CONFIG=$CUSTOM_USER_CONFIG" >> "$LOG_FILE"
 
-# Version check: detect stale binary from HiveOS cache
-# The binary must contain our patched options table (has "no-config" string)
-if [[ -f "$MINER_BIN" ]]; then
-    if ! strings "$MINER_BIN" 2>/dev/null | grep -q "no-config"; then
-        echo "WARN: Binary is outdated (missing no-config option). Force re-downloading..." | tee -a "$LOG_FILE"
-        DOWNLOAD_URL="https://github.com/JustAResearcher/xmrig-tari/releases/latest/download/xmrig-tari.tar.gz"
-        echo "Downloading from $DOWNLOAD_URL" | tee -a "$LOG_FILE"
-        cd /tmp
-        wget -q --no-check-certificate -O xmrig-tari-update.tar.gz "$DOWNLOAD_URL" 2>>"$LOG_FILE"
-        if [[ $? -eq 0 && -f xmrig-tari-update.tar.gz ]]; then
-            tar xzf xmrig-tari-update.tar.gz -C "$MINER_DIR" --strip-components=1 2>>"$LOG_FILE"
-            chmod +x "$MINER_BIN" 2>/dev/null
-            rm -f xmrig-tari-update.tar.gz
-            echo "Binary updated. New size: $(stat -c%s "$MINER_BIN" 2>/dev/null)" | tee -a "$LOG_FILE"
-        else
-            echo "WARN: Download failed, continuing with existing binary" | tee -a "$LOG_FILE"
-        fi
-        cd "$MINER_DIR"
+# Version-based auto-update: ensure binary matches this script's expected version.
+# A VERSION file is written after each successful download. If it doesn't match
+# SCRIPT_VERSION, we re-download from the latest release.
+DOWNLOAD_URL="https://github.com/JustAResearcher/xmrig-tari/releases/latest/download/xmrig-tari.tar.gz"
+VERSION_FILE="$MINER_DIR/.version"
+INSTALLED_VERSION=""
+[[ -f "$VERSION_FILE" ]] && INSTALLED_VERSION=$(cat "$VERSION_FILE" 2>/dev/null)
+
+if [[ "$INSTALLED_VERSION" != "$SCRIPT_VERSION" ]]; then
+    echo "UPDATE: installed=$INSTALLED_VERSION expected=$SCRIPT_VERSION — downloading latest..." | tee -a "$LOG_FILE"
+    cd /tmp
+    wget -q --no-check-certificate -O xmrig-tari-update.tar.gz "$DOWNLOAD_URL" 2>>"$LOG_FILE"
+    if [[ $? -eq 0 && -f xmrig-tari-update.tar.gz ]]; then
+        tar xzf xmrig-tari-update.tar.gz -C "$MINER_DIR" --strip-components=1 2>>"$LOG_FILE"
+        chmod +x "$MINER_BIN" 2>/dev/null
+        rm -f xmrig-tari-update.tar.gz
+        echo "$SCRIPT_VERSION" > "$VERSION_FILE"
+        echo "Updated to $SCRIPT_VERSION. Binary size: $(stat -c%s "$MINER_BIN" 2>/dev/null)" | tee -a "$LOG_FILE"
+    else
+        echo "WARN: Download failed, continuing with existing binary" | tee -a "$LOG_FILE"
     fi
+    cd "$MINER_DIR"
+else
+    echo "Version OK: $INSTALLED_VERSION" >> "$LOG_FILE"
 fi
 
 # Verify binary
