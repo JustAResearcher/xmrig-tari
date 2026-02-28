@@ -2,7 +2,7 @@
 # HiveOS run script for xmrig-tari custom miner v11
 # Uses --config to force config.json loading (contains explicit thread profiles)
 
-SCRIPT_VERSION="tari28"
+SCRIPT_VERSION="tari29"
 EXPECTED_BIN_SIZE=0  # 0 = skip check; CI sets this during build
 
 [[ -z $CUSTOM_MINER ]] && CUSTOM_MINER="xmrig"
