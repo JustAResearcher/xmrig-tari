@@ -112,7 +112,7 @@ cat > "$CUSTOM_CONFIG_FILENAME" <<CONFIGEOF
         "1gb-pages": true,
         "rdmsr": true,
         "wrmsr": true,
-        "cache_qos": false,
+        "cache_qos": true,
         "numa": true,
         "scratchpad_prefetch_mode": 1
     }
