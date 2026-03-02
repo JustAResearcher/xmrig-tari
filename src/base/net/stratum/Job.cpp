@@ -170,7 +170,7 @@ size_t xmrig::Job::nonceOffset() const
     }
 
     if (algorithm() == Algorithm::RX_TARI) {
-        return 298; // Tari 319-byte Borsh header blob: u64 LE nonce at offset 298
+        return 311; // Tari 319-byte Borsh header blob: u64 LE nonce at offset 311 (last field)
     }
 
     return 39;
