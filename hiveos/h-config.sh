@@ -12,8 +12,8 @@ CUSTOM_CONFIG_FILENAME="$MINER_DIR/config.json"
 #   CUSTOM_PASS    = password (unused, can be worker name)
 #   CUSTOM_USER_CONFIG = extra JSON overrides
 
-# Default bridge URL if not set
-BRIDGE_URL="${CUSTOM_URL:-192.168.68.78:18180}"
+# Default pool URL if not set (stratum port on miningcore)
+POOL_URL="${CUSTOM_URL:-192.168.68.78:3032}"
 WALLET="${CUSTOM_TEMPLATE:-default}"
 PASS="${CUSTOM_PASS:-x}"
 
@@ -85,14 +85,14 @@ cat > "$CUSTOM_CONFIG_FILENAME" <<CONFIGEOF
     "log-file": "/var/log/miner/$CUSTOM_MINER/$CUSTOM_MINER.log",
     "pools": [
         {
-            "url": "$BRIDGE_URL",
+            "url": "$POOL_URL",
             "user": "$WALLET",
             "pass": "$PASS",
             "coin": "TARI",
             "algo": "rx/tari",
-            "daemon": true,
-            "daemon-poll-interval": 1000,
-            "self-select": null
+            "daemon": false,
+            "tls": false,
+            "keepalive": true
         }
     ],
     "print-time": 30,
@@ -120,6 +120,6 @@ cat > "$CUSTOM_CONFIG_FILENAME" <<CONFIGEOF
 CONFIGEOF
 
 echo "Config generated: $CUSTOM_CONFIG_FILENAME"
-echo "Bridge: $BRIDGE_URL"
+echo "Pool: $POOL_URL"
 echo "Threads: $THREADS (from $(if [[ -f /sys/devices/system/cpu/online ]]; then echo sysfs; else echo nproc; fi))"
 echo "Thread array: $THREAD_ARRAY"
